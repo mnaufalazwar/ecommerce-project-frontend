@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
+import { Country } from 'src/app/common/country';
+import { State } from 'src/app/common/state';
 import { FalazwarShopFormService } from 'src/app/services/falazwar-shop-form.service';
 
 @Component({
@@ -16,6 +18,11 @@ export class CheckoutComponent implements OnInit {
 
   creditCardYears: number[] = [];
   creditCardMonths: number[] = [];
+
+  countries: Country[] = [];
+
+  shippingAddressStates: State[] = [];
+  billingAddressStates: State[] = [];
 
   constructor(private formBuilder: FormBuilder,
               private falazwarShopFormService: FalazwarShopFormService) { }
@@ -71,6 +78,15 @@ export class CheckoutComponent implements OnInit {
         this.creditCardYears = data;
       }
     );
+
+    // populate countries
+
+    this.falazwarShopFormService.getCountries().subscribe(
+      data => {
+        console.log("Retrieved countries: " + JSON.stringify(data));
+        this.countries = data;
+      }
+    )
   }
 
   copyShippingAddressToBillingAddress(event: Event) {
@@ -78,14 +94,25 @@ export class CheckoutComponent implements OnInit {
     if ((event.target as HTMLInputElement).checked) {
       this.checkoutFormGroup.controls['billingAddress']
           .setValue(this.checkoutFormGroup.controls['shippingAddress'].value);
+
+      // bug fix for states
+      this.billingAddressStates = this.shippingAddressStates;
+
     } else {
       this.checkoutFormGroup.controls['billingAddress'].reset();
+
+      // bug fix for states
+      this.billingAddressStates = [];
     }
   }
 
   onSubmit() {
     console.log("Handling the submit button");
     console.log(this.checkoutFormGroup.get('customer')!.value);
+    console.log("The email address is " + this.checkoutFormGroup.get('customer')?.value.email);
+
+    console.log("The shipping address country is " + this.checkoutFormGroup.get('shippingAddress')?.value.country.name);
+    console.log("The shipping address state is " + this.checkoutFormGroup.get('shippingAddress')?.value.state.name);
   }
 
   handleMonthsAndYears() {
@@ -95,7 +122,7 @@ export class CheckoutComponent implements OnInit {
     const currentYear: number = new Date().getFullYear();
     const selectedYear: number = Number(creditCardFormGroup?.value.expirationYear);
 
-    // if the current year ezuals the selected year, then start with the current month
+    // if the current year equals the selected year, then start with the current month
 
     let startMonth: number;
 
@@ -112,6 +139,30 @@ export class CheckoutComponent implements OnInit {
       }
     );
 
+  }
+
+  getStates(formGroupName: string) {
+
+    const formGroup = this.checkoutFormGroup.get(formGroupName);
+
+    const countryCode = formGroup?.value.country.code;
+    const countryName = formGroup?.value.country.name;
+
+    console.log(`${formGroupName} country code: ${countryCode}`);
+    console.log(`${formGroupName} country name: ${countryName}`);
+
+    this.falazwarShopFormService.getStates(countryCode).subscribe(
+      data => {
+        if (formGroupName === 'shippingAddress') {
+          this.shippingAddressStates = data;
+        } else {
+          this.billingAddressStates = data;
+        }
+
+        // select first item by default
+        formGroup?.get('state')?.setValue(data[0]);
+      }
+    );
   }
 
 }
