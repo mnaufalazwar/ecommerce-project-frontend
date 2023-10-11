@@ -3,6 +3,7 @@ import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms'
 import { Country } from 'src/app/common/country';
 import { State } from 'src/app/common/state';
 import { FalazwarShopFormService } from 'src/app/services/falazwar-shop-form.service';
+import { FalazwarValidators } from 'src/app/validators/falazwar-validators';
 
 @Component({
   selector: 'app-checkout',
@@ -31,10 +32,19 @@ export class CheckoutComponent implements OnInit {
 
     this.checkoutFormGroup = this.formBuilder.group({
       customer: this.formBuilder.group({
-        firstName: new FormControl('', [Validators.required, Validators.minLength(2)]),
-        lastName:  new FormControl('', [Validators.required, Validators.minLength(2)]),
+        firstName: new FormControl('', 
+                                   [Validators.required, 
+                                    Validators.minLength(2), 
+                                    FalazwarValidators.notOnlyWhitespace]),
+
+        lastName:  new FormControl('', 
+                                   [Validators.required, 
+                                    Validators.minLength(2), 
+                                    FalazwarValidators.notOnlyWhitespace]),
+
         email: new FormControl('', 
-                              [Validators.required, Validators.pattern('^[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,4}$')])
+                               [Validators.required, 
+                                Validators.pattern('^[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,4}$')])
       }),
       shippingAddress: this.formBuilder.group({
         street: [''],
