@@ -275,7 +275,8 @@ input.au-input.au-input-xl{
     display:-webkit-flex;
     display:-moz-box;
     display:-ms-flexbox;
-    display:flex
+    display:flex;
+    margin-right:10px;
 }
 
 .au-btn-submit{
